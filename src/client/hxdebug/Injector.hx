@@ -1,4 +1,6 @@
 package hxdebug;
+import haxe.macro.Context;
+import haxe.PosInfos;
 import haxe.macro.ExprTools;
 import haxe.macro.Expr;
 class Injector {
@@ -15,6 +17,10 @@ class Injector {
         }
     }
 
+    public static function hitLine(file:String, ?p:PosInfos) {
+        trace("HIT: " + file + ":" + p.lineNumber);
+    }
+
     /**
     * Will return an Expr object that is equivalent of the following:
     *
@@ -24,10 +30,11 @@ class Injector {
         var file = position.file;
         var min = position.min;
         var max = position.max;
+        var pInfos:PosInfos = Context.getPosInfos(position);
 
-        var functionName = macro trace;
+        var functionName = macro hxdebug.Injector.hitLine;
         var functionParam = {
-            expr: ExprDef.EConst(Constant.CString("Hit: " + file)),
+            expr: ExprDef.EConst(Constant.CString(file)),
             pos: position
         };
 
