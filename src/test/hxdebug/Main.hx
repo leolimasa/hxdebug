@@ -1,3 +1,5 @@
+package hxdebug;
+
 import haxe.unit.TestRunner;
 class Main {
     public static function main() {

@@ -1,3 +1,8 @@
+package hxdebug;
+
+import haxe.macro.ExprTools;
+import hxdebug.Injector;
+import haxe.macro.ExprTools;
 import haxe.macro.Expr;
 import haxe.unit.TestCase;
 class InjectorTest extends TestCase {
@@ -14,7 +19,14 @@ class InjectorTest extends TestCase {
             default:
                 assertTrue(false);
         }
-        trace(block);
+    }
 
+    public function testInject() {
+        var e = macro if (a > b) {
+            var c = 1;
+            var d = 2;
+            trace("test");
+        }
+        trace(ExprTools.toString(Injector.inject(e)));
     }
 }
