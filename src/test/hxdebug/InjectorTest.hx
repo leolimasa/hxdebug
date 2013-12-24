@@ -24,6 +24,14 @@ class InjectorTest extends TestCase {
 
     }
 
+    public function testPosToLine() {
+        var cont = "line1\r\nline2\r\nline3";
+
+        assertEquals(1, Injector.charPosToLine(cont, 2));
+        assertEquals(2, Injector.charPosToLine(cont, 7));
+        assertEquals(3, Injector.charPosToLine(cont, 15));
+    }
+
     /*public function testInject() {
         var e = macro if (a > b) {
             var c = 1;

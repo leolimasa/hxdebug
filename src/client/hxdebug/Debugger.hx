@@ -1,0 +1,5 @@
+package hxdebug;
+
+class Debugger {
+
+}
