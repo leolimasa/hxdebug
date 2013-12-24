@@ -1,4 +1,5 @@
 package hxdebug;
+import haxe.macro.Type;
 import Std;
 import sys.io.File;
 import haxe.macro.ExprTools;
@@ -25,6 +26,21 @@ class Injector {
 
             case _:
                 return ExprTools.map(exp, inject);
+        }
+    }
+
+    // ..................................................................................
+
+    public function injectType(type:Type) {
+        switch (type) {
+            case (TInst(t, params)):
+                var cls:ClassType = t.get();
+                var fields:Array<ClassField> = cls.fields.get();
+                for (f in fields) {
+                    var newField = {
+
+                    };
+                }
         }
     }
 
