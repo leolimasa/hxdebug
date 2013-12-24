@@ -1,5 +1,5 @@
 package hxdebug;
-import haxe.macro.Type;
+import haxe.macro.Context;
 import Std;
 import sys.io.File;
 import haxe.macro.ExprTools;
@@ -13,9 +13,7 @@ class Injector {
 
     private var files:Map<String,String> = new Map<String, String>();
 
-    public function new() {
-
-    }
+    public function new() {}
 
     // ..................................................................................
 
@@ -23,25 +21,31 @@ class Injector {
         switch(exp.expr) {
             case ExprDef.EBlock(exprs):
                 return makeBlockFromExpr(exp);
-
             case _:
                 return ExprTools.map(exp, inject);
         }
     }
 
+
+
     // ..................................................................................
 
-    public function injectType(type:Type) {
-        switch (type) {
+    public function injectType(type) {
+        trace(type);
+       /*var newFields = new Array<ClassField>();
+
+       switch (type) {
             case (TInst(t, params)):
-                var cls:ClassType = t.get();
+                var cls = t.get();
                 var fields:Array<ClassField> = cls.fields.get();
                 for (f in fields) {
-                    var newField = {
-
-                    };
+                    switch (f.kind) {
+                        case (FFun(fun)):
+                            var fn:Function = fun;
+                            fn.expr = inject(fn.expr);
+                    }
                 }
-        }
+       }*/
     }
 
     // ..................................................................................
@@ -51,8 +55,8 @@ class Injector {
     *
     * Debugger.hit([file], [min], [max])
     **/
-    public function makeInjectExpr(position: Position) {
-        var file = position.file;
+    public function makeInjectExpr(position:Position) {
+        var file:String = position.file;
         var line = findLineInFile(file, position.min);
 
         // Construct function

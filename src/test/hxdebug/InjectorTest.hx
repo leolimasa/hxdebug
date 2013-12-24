@@ -69,6 +69,16 @@ class InjectorTest extends TestCase {
     public function testPosToLine() {
         var cont = "line1\r\nline2\r\nline3";
 
+        var c = macro : {
+        function extraMethod() {
+        var foo = 5,
+        bar = 4;
+        return foo + bar;
+        }
+        };
+        trace(c);
+        trace(Injector);
+
         assertEquals(1, inj.charPosToLine(cont, 2));
         assertEquals(2, inj.charPosToLine(cont, 7));
         assertEquals(3, inj.charPosToLine(cont, 15));
