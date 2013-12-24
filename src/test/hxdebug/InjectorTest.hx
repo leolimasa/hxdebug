@@ -5,6 +5,8 @@ import hxdebug.Injector;
 import haxe.macro.ExprTools;
 import haxe.macro.Expr;
 import haxe.unit.TestCase;
+import haxe.CallStack;
+
 class InjectorTest extends TestCase {
     public function testMakeBlock() {
         var exprArr = new Array<Expr>();
@@ -19,9 +21,10 @@ class InjectorTest extends TestCase {
             default:
                 assertTrue(false);
         }
+
     }
 
-    public function testInject() {
+    /*public function testInject() {
         var e = macro if (a > b) {
             var c = 1;
             var d = 2;
@@ -33,5 +36,5 @@ class InjectorTest extends TestCase {
         }
         trace(ExprTools.toString(Injector.inject(e)));
 
-    }
+    } */
 }

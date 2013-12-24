@@ -17,10 +17,6 @@ class Injector {
         }
     }
 
-    public static function hitLine(file:String, ?p:PosInfos) {
-        trace("HIT: " + file + ":" + p.lineNumber);
-    }
-
     /**
     * Will return an Expr object that is equivalent of the following:
     *
@@ -30,9 +26,8 @@ class Injector {
         var file = position.file;
         var min = position.min;
         var max = position.max;
-        var pInfos:PosInfos = Context.getPosInfos(position);
 
-        var functionName = macro hxdebug.Injector.hitLine;
+        var functionName = macro hxdebug.Debugger.hit;
         var functionParam = {
             expr: ExprDef.EConst(Constant.CString(file)),
             pos: position
@@ -67,5 +62,20 @@ class Injector {
             default:
                 return expr;
         }
+    }
+
+    /**
+    * Returns the count of how many linebreaks there are in contents before the specified
+    * position.
+    **/
+    public static function posToLine(pos:Position, contents:String) {
+        var stripped = contents.substr(0, pos.min);
+        var count = 0;
+        for (i in 0...stripped.length) {
+            if (stripped.charAt(i) == '\n') {
+                count++;
+            }
+        }
+        return count + 1;
     }
 }
