@@ -1,4 +1,6 @@
 package hxdebug;
+import haxe.macro.Type.ClassField;
+import haxe.macro.Type;
 import haxe.macro.Context;
 import Std;
 import sys.io.File;
@@ -28,23 +30,24 @@ class Injector {
 
     // ..................................................................................
 
-    public function injectType(type) {
-        trace("INJECTING!!!");
-        trace(type);
-       /*var newFields = new Array<ClassField>();
+    public function injectType(type:Type) {
+        //trace("INJECTING!!!");
+        //trace(type);
+       //var newFields = new Array<ClassField>();
 
-       switch (type) {
+      switch (type) {
             case (TInst(t, params)):
                 var cls = t.get();
-                var fields:Array<ClassField> = cls.fields.get();
+                var fields = cls.fields.get();
                 for (f in fields) {
                     switch (f.kind) {
-                        case (FFun(fun)):
-                            var fn:Function = fun;
-                            fn.expr = inject(fn.expr);
+                        case (FMethod(meth)):
+                            trace(meth);
+                        case _:
                     }
                 }
-       }*/
+           case (_):
+       }
     }
 
     // ..................................................................................
@@ -63,8 +66,14 @@ class Injector {
         var file:String = p.file;
         var line = findLineInFile(file, p.min);
 
+        var exp = macro hxdebug.Debugger.hit($v{file}, $v{line});
+        return {
+            expr: exp.expr,
+            pos: pos
+        }
+
         // Construct function
-        var functionName = macro hxdebug.Debugger.hit;
+        /*var functionName = macro hxdebug.Debugger.hit;
         var functionParam1 = {
             expr: ExprDef.EConst(Constant.CString(file)),
             pos: pos
@@ -81,7 +90,7 @@ class Injector {
                 [functionParam1, functionParam2]
             ),
             pos: pos
-        }
+        } */
     }
 
     // ..................................................................................
