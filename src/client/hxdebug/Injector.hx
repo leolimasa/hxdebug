@@ -55,19 +55,19 @@ class Injector {
     *
     * Debugger.hit([file], [min], [max])
     **/
-    public function makeInjectExpr(position:Position) {
-        var file:String = position.file;
-        var line = findLineInFile(file, position.min);
+    public function makeInjectExpr(pos:Position) {
+        var file:String = pos.file;
+        var line = findLineInFile(file, pos.min);
 
         // Construct function
         var functionName = macro hxdebug.Debugger.hit;
         var functionParam1 = {
             expr: ExprDef.EConst(Constant.CString(file)),
-            pos: position
+            pos: pos
         };
         var functionParam2 = {
             expr: ExprDef.EConst(Constant.CInt(Std.string(line))),
-            pos: position
+            pos: pos
         };
 
         // Return the full expression
@@ -76,7 +76,7 @@ class Injector {
                 functionName,
                 [functionParam1, functionParam2]
             ),
-            pos: position
+            pos: pos
         }
     }
 
