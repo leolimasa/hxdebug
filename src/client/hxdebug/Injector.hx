@@ -38,11 +38,13 @@ class Injector {
       switch (type) {
             case (TInst(t, params)):
                 var cls = t.get();
+                trace(cls);
                 var fields = cls.fields.get();
                 for (f in fields) {
+
                     switch (f.kind) {
                         case (FMethod(meth)):
-                            trace(meth);
+                            trace(inject(f.expr()));
                         case _:
                     }
                 }
