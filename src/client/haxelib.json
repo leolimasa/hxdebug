@@ -1,0 +1,11 @@
+{
+	"name": "hxdebug",
+	"url": "",
+	"license": "MIT",
+	"tags": [],
+	"description": "A pure haxe debugger, for haxe.",
+	"version": "1.0.0",
+	"releasenote": "Initial release",
+	"contributors": [ "Leonardo Sá" ],
+	"dependencies": {}
+}

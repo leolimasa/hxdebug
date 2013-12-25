@@ -26,11 +26,10 @@ class Injector {
         }
     }
 
-
-
     // ..................................................................................
 
     public function injectType(type) {
+        trace("INJECTING!!!");
         trace(type);
        /*var newFields = new Array<ClassField>();
 
@@ -56,8 +55,13 @@ class Injector {
     * Debugger.hit([file], [min], [max])
     **/
     public function makeInjectExpr(pos:Position) {
-        var file:String = pos.file;
-        var line = findLineInFile(file, pos.min);
+        #if macro
+        var p = Context.getPosInfos(pos);
+        #else
+        var p = pos;
+        #end
+        var file:String = p.file;
+        var line = findLineInFile(file, p.min);
 
         // Construct function
         var functionName = macro hxdebug.Debugger.hit;

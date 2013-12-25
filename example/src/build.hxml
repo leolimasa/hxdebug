@@ -1,0 +1,4 @@
+--macro hxdebug.Builder.build()
+-main Hello
+-lib hxdebug
+-neko hello.n
