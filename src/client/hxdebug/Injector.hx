@@ -2,6 +2,7 @@ package hxdebug;
 import haxe.macro.Type.ClassField;
 import haxe.macro.Type;
 import haxe.macro.Context;
+import haxe.macro.TypeTools;
 import Std;
 import sys.io.File;
 import haxe.macro.ExprTools;
@@ -13,9 +14,11 @@ import haxe.macro.Expr;
 **/
 class Injector {
 
-    private var files:Map<String,String> = new Map<String, String>();
+    private var files:Map<String,String>;
 
-    public function new() {}
+    public function new() {
+        files = new Map<String, String>();
+    }
 
     // ..................................................................................
 
@@ -30,26 +33,63 @@ class Injector {
 
     // ..................................................................................
 
-    public function injectType(type:Type) {
+   /* public function injectType(type:Type) {
         //trace("INJECTING!!!");
         //trace(type);
        //var newFields = new Array<ClassField>();
 
       switch (type) {
             case (TInst(t, params)):
-                var cls = t.get();
-                trace(cls);
+                var cls:ClassType = t.get();
+
                 var fields = cls.fields.get();
                 for (f in fields) {
 
                     switch (f.kind) {
-                        case (FMethod(meth)):
-                            trace(inject(f.expr()));
+                        case (FMethod(k)):
+                            trace(f.type);
+                            var exp = f.expr();
+                            if (exp != null) {
+                                var newMeth = inject(Context.getTypedExpr(exp));
+                            }
                         case _:
                     }
                 }
            case (_):
        }
+    } */
+
+    // ..................................................................................
+
+    public function injectFields(fields:Array<Field>) : Array<Field> {
+        var result = new Array<Field>();
+
+        for (f in fields) {
+            switch (f.kind) {
+                case (FFun(fun)):
+
+                    // Creates the new function declaration with injected blocks
+                    var newFun = {
+                        args: fun.args,
+                        ret: fun.ret,
+                        expr: inject(fun.expr),
+                        params: fun.params
+                    };
+
+                    // Creates the
+                    result.push({
+                       name: f.name,
+                       doc: f.doc,
+                       access: f.access,
+                       kind: FFun(newFun),
+                       pos: f.pos,
+                       meta: f.meta
+                    });
+                case (_):
+                    result.push(f);
+            }
+        }
+        return result;
     }
 
     // ..................................................................................
@@ -65,34 +105,15 @@ class Injector {
         #else
         var p = pos;
         #end
-        var file:String = p.file;
-        var line = findLineInFile(file, p.min);
+        var file = p.file;
+        var min = p.min;
+        var line = findLineInFile(file, min);
 
         var exp = macro hxdebug.Debugger.hit($v{file}, $v{line});
         return {
             expr: exp.expr,
             pos: pos
         }
-
-        // Construct function
-        /*var functionName = macro hxdebug.Debugger.hit;
-        var functionParam1 = {
-            expr: ExprDef.EConst(Constant.CString(file)),
-            pos: pos
-        };
-        var functionParam2 = {
-            expr: ExprDef.EConst(Constant.CInt(Std.string(line))),
-            pos: pos
-        };
-
-        // Return the full expression
-        return {
-            expr: ExprDef.ECall(
-                functionName,
-                [functionParam1, functionParam2]
-            ),
-            pos: pos
-        } */
     }
 
     // ..................................................................................

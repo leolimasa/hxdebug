@@ -1,5 +1,6 @@
 package hxdebug;
 
+import haxe.macro.Type.TypedExpr;
 import haxe.macro.ExprTools;
 import hxdebug.Injector;
 import haxe.macro.ExprTools;
