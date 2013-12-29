@@ -1,5 +1,6 @@
 package hxdebug;
 
+import haxe.macro.Context;
 import haxe.macro.Type.TypedExpr;
 import haxe.macro.ExprTools;
 import hxdebug.Injector;
@@ -24,6 +25,9 @@ class InjectorTest extends TestCase {
     }
 
     public function testInject() {
+        trace("CURRENT FILE");
+        trace(currentFile());
+
         var e = macro if (a > b) {
             var c = 1;
             var d = 2;
@@ -57,14 +61,18 @@ class InjectorTest extends TestCase {
         exprArr.push(macro var b = 1);
         exprArr.push(macro if (a > b) trace("test"));
 
-        var block = inj.makeBlock(exprArr, {file: "test.hx", min:0, max: 0});
+        var p:Position = {
+            file: "test.hx",
+            min:0,
+            max:0
+        };
+        var block = inj.makeBlock(exprArr, p);
         switch (block.expr) {
             case ExprDef.EBlock(exprs):
                 assertEquals(exprs.length, 6);
             default:
                 assertTrue(false);
         }
-
     }
 
     public function testPosToLine() {
@@ -83,6 +91,12 @@ class InjectorTest extends TestCase {
         assertEquals(1, inj.charPosToLine(cont, 2));
         assertEquals(2, inj.charPosToLine(cont, 7));
         assertEquals(3, inj.charPosToLine(cont, 15));
+    }
+
+    macro private static function currentFile() : Expr {
+        var pos = Context.getPosInfos(Context.currentPos());
+        var file = pos.file;
+        return macro $v{file};
     }
 
 

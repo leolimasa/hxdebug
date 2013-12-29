@@ -1,4 +1,5 @@
 package hxdebug;
+import hxdebug.tools.FileCache;
 import haxe.macro.Type.ClassField;
 import haxe.macro.Type;
 import haxe.macro.Context;
@@ -76,7 +77,7 @@ class Injector {
                         params: fun.params
                     };
 
-                    // Creates the
+                    // Creates the field with the new function
                     result.push({
                        name: f.name,
                        doc: f.doc,
@@ -85,6 +86,7 @@ class Injector {
                        pos: f.pos,
                        meta: f.meta
                     });
+
                 case (_):
                     result.push(f);
             }
@@ -165,10 +167,6 @@ class Injector {
     * Returns which line number the specified character position is within a file.
     **/
     public function findLineInFile(file:String, pos:Int) : Int {
-        if (!files.exists(file)) {
-            var f = File.getContent(file);
-            files.set(file, f);
-        }
-        return charPosToLine(files[file], pos);
+        return charPosToLine(FileCache.readFile(file), pos);
     }
 }

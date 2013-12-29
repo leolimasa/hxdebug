@@ -1,3 +1,4 @@
+--macro hxdebug.Builder.debug()
 -main Hello
 -lib hxdebug
--neko hello.n
+-cpp mycpp
