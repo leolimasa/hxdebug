@@ -34,34 +34,6 @@ class Injector {
 
     // ..................................................................................
 
-   /* public function injectType(type:Type) {
-        //trace("INJECTING!!!");
-        //trace(type);
-       //var newFields = new Array<ClassField>();
-
-      switch (type) {
-            case (TInst(t, params)):
-                var cls:ClassType = t.get();
-
-                var fields = cls.fields.get();
-                for (f in fields) {
-
-                    switch (f.kind) {
-                        case (FMethod(k)):
-                            trace(f.type);
-                            var exp = f.expr();
-                            if (exp != null) {
-                                var newMeth = inject(Context.getTypedExpr(exp));
-                            }
-                        case _:
-                    }
-                }
-           case (_):
-       }
-    } */
-
-    // ..................................................................................
-
     public function injectFields(fields:Array<Field>) : Array<Field> {
         var result = new Array<Field>();
 
@@ -99,7 +71,7 @@ class Injector {
     /**
     * Will return an Expr object that is equivalent of the following:
     *
-    * Debugger.hit([file], [min], [max])
+    * Debugger.hit([file],[line])
     **/
     public function makeInjectExpr(pos:Position) {
         #if macro
