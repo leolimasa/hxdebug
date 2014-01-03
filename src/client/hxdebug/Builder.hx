@@ -17,10 +17,15 @@ class Builder {
 
         var classPath:Array<String> = Context.getClassPath();
 
+        // adds in the local directory
+        classPath.push(Sys.getCwd());
+
         for (cp in classPath) {
 
-            // don't search on root
-            if (cp == "/") continue;
+            // don't search on root or empty
+            if (cp == "/" || cp == "") {
+                continue;
+            }
 
             for (p in packages) {
                 for (cls in ClasspathTools.getClassesInPackage(cp, p)) {
