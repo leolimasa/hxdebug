@@ -8,6 +8,7 @@ class Main {
         var runner = new TestRunner();
         runner.add(new InjectorTest());
         runner.add(new ClasspathToolsTest());
+        runner.add(new DebuggerTest());
         runner.run();
     }
 }
