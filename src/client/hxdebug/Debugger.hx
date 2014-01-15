@@ -2,6 +2,7 @@ package hxdebug;
 
 class Debugger {
     public static var current:Debugger;
+    public var stack:Array<StackFrame>;
     private var breakpoints:Map<String, Map<Int,Bool>>;
 
     public static function hit(file:String, line:Int) {
@@ -13,8 +14,32 @@ class Debugger {
 
     // ..................................................................................
 
+    public static function pushStack(metName:String, file:String, line:Int) {
+        if (current == null) {
+            return;
+        }
+
+        var frame = new StackFrame();
+        frame.file = file;
+        frame.line = line;
+        frame.index = current.stack.length;
+        current.stackPush(frame);
+    }
+
+    // ..................................................................................
+
+    public static function popStack() {
+        if (current == null) {
+            return;
+        }
+        return current.stackPop();
+    }
+
+    // ..................................................................................
+
     private function new() {
         breakpoints = new Map<String, Map<Int, Bool>>();
+        stack = new Array<StackFrame>();
     }
 
     // ..................................................................................
@@ -68,6 +93,24 @@ class Debugger {
         && breakpoints[file][line]) {
             onBreak(file, line);
         }
+    }
+
+    // ..................................................................................
+
+    public function stackPush(frame:StackFrame) {
+        stack.push(frame);
+    }
+
+    // ..................................................................................
+
+    public function stackPop() : StackFrame {
+        return stack.pop();
+    }
+
+    // ..................................................................................
+
+    public function assignVar(name:String, value:Dynamic) {
+        stack[stack.length].assignVar(name, value);
     }
 
     // ..................................................................................
