@@ -2,7 +2,6 @@
 package hxdebug;
 
 import hxdebug.Variable.Field;
-import hxdebug.DebuggerCommand.Variable;
 
 class StackFrame {
     public var index:Int;
@@ -29,10 +28,11 @@ class StackFrame {
         return result;
     }
 
-    function set_locals(value:Array<Variable>) {
+    function set_locals(value:Array<Variable>) : Array<Variable> {
         //TODO
         for (v in value) {
             localVars.set(v.name, v);
         }
+        return value;
     }
 }

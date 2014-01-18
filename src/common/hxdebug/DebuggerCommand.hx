@@ -12,13 +12,6 @@ class BreakpointHit extends DebuggerCommand {
     }
 }
 
-class Field {
-    public var name:String;
-
-    public function new() {
-    }
-}
-
 class Stack extends DebuggerCommand {
     public var frames:Array<StackFrame>;
 

@@ -35,11 +35,11 @@ class InjectorTest extends TestCase {
             }
             trace("test");
         }
-        var expect = "if(a > b) {
+        var expect = "if(a>b) {
 \ttrace(\"hi\");
-\tvar c = 1;
+\tvar c=1;
 \ttrace(\"hi\");
-\tvar d = 2;
+\tvar d=2;
 \ttrace(\"hi\");
 \tfor(e in f) {
 \t\ttrace(\"hi\");

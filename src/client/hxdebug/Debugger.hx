@@ -32,7 +32,7 @@ class Debugger {
 
     public static function popStack() {
         if (current == null) {
-            return;
+            return null;
         }
         return current.stackPop();
     }

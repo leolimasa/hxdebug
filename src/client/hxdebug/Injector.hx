@@ -9,6 +9,57 @@ import sys.io.File;
 import haxe.macro.ExprTools;
 import haxe.macro.Expr;
 
+class BlockExp {
+    public var exprs:Array<Expr>;
+    public var pos:Position;
+
+    public function new(exp:Expr) {
+        switch (exp.expr) {
+            case (ExprDef.EBlock(exprs)):
+                this.exprs = exprs;
+                this.pos = exp.pos;
+            default:
+                throw "Expression is not a BLOCK";
+        }
+    }
+
+    public function toExpr() {
+        return {
+            expr: ExprDef.EBlock(exprs),
+            pos: pos
+        }
+    }
+}
+
+class FunctionExp {
+    public var name:String;
+    public var block:BlockExp;
+    public var pos:Position;
+    private var fun:Function;
+
+    public function new(exp:Expr) {
+        switch (exp.expr) {
+            case (ExprDef.EFunction(name, f)):
+                this.block = new BlockExp(f.expr);
+                this.pos = exp.pos;
+                this.fun = f;
+            default:
+                throw "Expression is not a FUNCTION";
+        }
+    }
+
+    public function toExpr() : Expr {
+        var blockexp = block.toExpr();
+
+        fun.expr = blockexp;
+
+        return {
+            expr: ExprDef.EFunction(name, fun),
+            pos: this.pos
+        }
+    }
+}
+
 /**
 * Changes arbitrary code such that there will be a Debugger.hit() call inside every
 * block.
@@ -26,7 +77,9 @@ class Injector {
     public function inject(exp: Expr) : Expr {
         switch(exp.expr) {
             case ExprDef.EBlock(exprs):
-                return makeBlockFromExpr(exp);
+                return makeBlock(exp);
+            case ExprDef.EFunction(name, f):
+                return makeFunction(exp);
             case _:
                 return ExprTools.map(exp, inject);
         }
@@ -105,7 +158,7 @@ class Injector {
         $v{line});
 
         return {
-            expr: exp,
+            expr: exp.expr,
             pos: pos
         };
     }
@@ -115,35 +168,36 @@ class Injector {
     public function makeStackEndExpr(pos:Position) : Expr {
         var exp = macro hxdebug.Debugger.popStack();
         return {
-            expr: exp,
+            expr: exp.expr,
             pos: pos
         };
     }
 
     // ..................................................................................
 
-    public function makeBlock(exprs:Array<Expr>, pos:Position) : Expr {
+    public function makeBlock(expr : Expr) : Expr {
+        var block = new BlockExp(expr);
+
         var result = new Array<Expr>();
-        for (expr in exprs) {
+        for (expr in block.exprs) {
             result.push(makeInjectExpr(expr.pos));
             result.push(inject(expr));
         }
 
-        return {
-            expr: ExprDef.EBlock(result),
-            pos: pos
-        }
+        block.exprs = result;
+        return block.toExpr();
     }
 
     // ..................................................................................
 
-    public function makeBlockFromExpr(expr : Expr) : Expr {
-        switch(expr.expr) {
-            case ExprDef.EBlock(exprs):
-                return makeBlock(exprs, expr.pos);
-            default:
-                return expr;
-        }
+    private function makeFunction(expr : Expr) : Expr {
+        var fun = new FunctionExp(expr);
+        fun.block = new BlockExp(makeBlock(fun.block.toExpr()));
+
+        fun.block.exprs.insert(0, makeStackStartExpr(fun.pos, fun.name));
+        fun.block.exprs.push(makeStackEndExpr(fun.pos));
+
+        return fun.toExpr();
     }
 
     // ..................................................................................
@@ -172,3 +226,6 @@ class Injector {
         return charPosToLine(FileCache.readFile(file), pos);
     }
 }
+
+
+
