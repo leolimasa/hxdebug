@@ -14,7 +14,8 @@ class Debugger {
 
     // ..................................................................................
 
-    public static function pushStack(metName:String, file:String, line:Int) {
+    public static function pushStack(self:Dynamic, metName:String, file:String,
+    line:Int) {
         if (current == null) {
             return;
         }
@@ -23,6 +24,7 @@ class Debugger {
         frame.file = file;
         frame.line = line;
         frame.index = current.stack.length;
+        frame.assignVar("this", self);
         current.stackPush(frame);
     }
 

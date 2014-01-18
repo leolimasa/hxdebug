@@ -92,6 +92,36 @@ class Injector {
 
     // ..................................................................................
 
+    public function makeStackStartExpr(pos:Position, funName:String) : Expr {
+        #if macro
+        var p = Context.getPosInfos(pos);
+        #else
+        var p = pos;
+        #end
+        var file = p.file;
+        var min = p.min;
+        var line = findLineInFile(file, min);
+        var exp =  macro hxdebug.Debugger.pushStack(this, $v{funName}, $v{file},
+        $v{line});
+
+        return {
+            expr: exp,
+            pos: pos
+        };
+    }
+
+    // ..................................................................................
+
+    public function makeStackEndExpr(pos:Position) : Expr {
+        var exp = macro hxdebug.Debugger.popStack();
+        return {
+            expr: exp,
+            pos: pos
+        };
+    }
+
+    // ..................................................................................
+
     public function makeBlock(exprs:Array<Expr>, pos:Position) : Expr {
         var result = new Array<Expr>();
         for (expr in exprs) {
