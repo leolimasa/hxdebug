@@ -26,7 +26,7 @@ class InjectorTest extends TestCase {
 
     public function testInject() {
 
-        var e = macro if (a > b) {
+        var e = injectedStr(if (a > b) {
             var c = 1;
             var d = 2;
             for (e in f) {
@@ -34,7 +34,16 @@ class InjectorTest extends TestCase {
                 call2("arg");
             }
             trace("test");
-        }
+
+            var myf = function(g, h) {
+                trace("fun");
+            }
+
+            function namedfun(i, j) {
+                trace("anotherfun");
+            }
+        });
+
         var expect = "if(a>b) {
 \ttrace(\"hi\");
 \tvar c=1;
@@ -50,7 +59,7 @@ class InjectorTest extends TestCase {
 \ttrace(\"hi\");
 \ttrace(\"test\");
 } ";
-        assertEquals(expect, ExprTools.toString(inj.inject(e)));
+        assertEquals(expect, e);
     }
 
     public function testMakeBlock() {
@@ -88,9 +97,15 @@ class InjectorTest extends TestCase {
         assertEquals(1, inj.charPosToLine(cont, 2));
         assertEquals(2, inj.charPosToLine(cont, 7));
         assertEquals(3, inj.charPosToLine(cont, 15));
+
     }
 
-
-
-
+    private static macro function injectedStr(exp:Expr) {
+        var inj = new MockInjector();
+        var result = ExprTools.toString(inj.inject(exp));
+        return {
+            expr: ExprDef.EConst(Constant.CString(result)),
+            pos: exp.pos
+        }
+    }
 }

@@ -1,4 +1,5 @@
 package hxdebug;
+import haxe.macro.Expr.Position;
 import hxdebug.tools.FileCache;
 import haxe.macro.Type.ClassField;
 import haxe.macro.Type;
@@ -14,6 +15,7 @@ class BlockExp {
     public var pos:Position;
 
     public function new(exp:Expr) {
+        var t = Sys.time();
         switch (exp.expr) {
             case (ExprDef.EBlock(exprs)):
                 this.exprs = exprs;
@@ -21,6 +23,7 @@ class BlockExp {
             default:
                 throw "Expression is not a BLOCK";
         }
+        Injector.incTimer("BlockExp.new", t);
     }
 
     public function toExpr() {
@@ -49,10 +52,11 @@ class FunctionExp {
     }
 
     public function toExpr() : Expr {
+        var t = Sys.time();
         var blockexp = block.toExpr();
 
         fun.expr = blockexp;
-
+        Injector.incTimer("FunctionExp.toExpr", t);
         return {
             expr: ExprDef.EFunction(name, fun),
             pos: this.pos
@@ -68,6 +72,20 @@ class Injector {
 
     private var files:Map<String,String>;
 
+    public static var timers:Map<String, Float>;
+
+    public static function __init__() {
+        timers = new Map<String,Float>();
+    }
+
+    public static function incTimer(name:String, startTime:Float) {
+        var t = 0.0;
+        if (timers.exists(name)) {
+            t = timers[name];
+        }
+        timers[name] = t + (Sys.time() - startTime);
+    }
+
     public function new() {
         files = new Map<String, String>();
     }
@@ -75,30 +93,45 @@ class Injector {
     // ..................................................................................
 
     public function inject(exp: Expr) : Expr {
+        var t = Sys.time();
+
         switch(exp.expr) {
             case ExprDef.EBlock(exprs):
-                return makeBlock(exp);
+                var e = makeBlock(exp);
+                incTimer("inject", t);
+                return e;
             case ExprDef.EFunction(name, f):
-                return makeFunction(exp);
+                var e = makeFunction(exp);
+                incTimer("inject",t);
+                return e;
             case _:
-                return ExprTools.map(exp, inject);
+                var e = ExprTools.map(exp, inject);
+                incTimer("inject",t);
+                return e;
         }
     }
 
     // ..................................................................................
 
     public function injectFields(fields:Array<Field>) : Array<Field> {
+        var t = Sys.time();
         var result = new Array<Field>();
 
         for (f in fields) {
             switch (f.kind) {
                 case (FFun(fun)):
 
+                    var expr = inject(fun.expr);
+
+                    // Adds stack start and end
+                    //var block = new BlockExp(expr);
+                    //addStackHandlingToBlock(f.pos, f.name, block);
+
                     // Creates the new function declaration with injected blocks
                     var newFun = {
                         args: fun.args,
                         ret: fun.ret,
-                        expr: inject(fun.expr),
+                        expr: expr,
                         params: fun.params
                     };
 
@@ -116,6 +149,7 @@ class Injector {
                     result.push(f);
             }
         }
+        incTimer("injectFields", t);
         return result;
     }
 
@@ -127,6 +161,8 @@ class Injector {
     * Debugger.hit([file],[line])
     **/
     public function makeInjectExpr(pos:Position) {
+        var t = Sys.time();
+
         #if macro
         var p = Context.getPosInfos(pos);
         #else
@@ -137,6 +173,8 @@ class Injector {
         var line = findLineInFile(file, min);
 
         var exp = macro hxdebug.Debugger.hit($v{file}, $v{line});
+
+        incTimer("makeInjectExpr", t);
         return {
             expr: exp.expr,
             pos: pos
@@ -146,6 +184,8 @@ class Injector {
     // ..................................................................................
 
     public function makeStackStartExpr(pos:Position, funName:String) : Expr {
+        var t = Sys.time();
+
         #if macro
         var p = Context.getPosInfos(pos);
         #else
@@ -157,6 +197,7 @@ class Injector {
         var exp =  macro hxdebug.Debugger.pushStack(this, $v{funName}, $v{file},
         $v{line});
 
+        incTimer("makeStackStartExpr", t);
         return {
             expr: exp.expr,
             pos: pos
@@ -166,7 +207,10 @@ class Injector {
     // ..................................................................................
 
     public function makeStackEndExpr(pos:Position) : Expr {
+        var t = Sys.time();
+
         var exp = macro hxdebug.Debugger.popStack();
+        incTimer("makeStackEndExpr", t);
         return {
             expr: exp.expr,
             pos: pos
@@ -176,6 +220,8 @@ class Injector {
     // ..................................................................................
 
     public function makeBlock(expr : Expr) : Expr {
+        var t = Sys.time();
+
         var block = new BlockExp(expr);
 
         var result = new Array<Expr>();
@@ -185,18 +231,21 @@ class Injector {
         }
 
         block.exprs = result;
+        incTimer("makeBlock", t);
         return block.toExpr();
     }
 
     // ..................................................................................
 
     private function makeFunction(expr : Expr) : Expr {
+        var t = Sys.time();
+
         var fun = new FunctionExp(expr);
         fun.block = new BlockExp(makeBlock(fun.block.toExpr()));
-
         fun.block.exprs.insert(0, makeStackStartExpr(fun.pos, fun.name));
         fun.block.exprs.push(makeStackEndExpr(fun.pos));
 
+        incTimer("makeFunction", t);
         return fun.toExpr();
     }
 
@@ -207,6 +256,7 @@ class Injector {
     * position.
     **/
     public function charPosToLine(contents:String, pos:Int) : Int {
+        var t = Sys.time();
         var stripped = contents.substr(0, pos);
         var count = 0;
         for (i in 0...stripped.length) {
@@ -214,6 +264,7 @@ class Injector {
                 count++;
             }
         }
+        incTimer("charPosToLine", t);
         return count + 1;
     }
 

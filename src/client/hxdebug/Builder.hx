@@ -29,7 +29,6 @@ class Builder {
 
             for (p in packages) {
                 for (cls in ClasspathTools.getClassesInPackage(cp, p)) {
-                    trace(cls);
                     Compiler.addMetadata("@:build(hxdebug.Builder.build())", cls);
                     Compiler.keep(cls, null, true);
                 }
@@ -42,6 +41,8 @@ class Builder {
     macro public static function build() : Array<Field> {
         var fields = Context.getBuildFields();
         var injector = new Injector();
-        return injector.injectFields(fields);
+        var fs = injector.injectFields(fields);
+        trace(Injector.timers);
+        return fs;
     }
 }

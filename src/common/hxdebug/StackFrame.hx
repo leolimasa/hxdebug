@@ -7,6 +7,7 @@ class StackFrame {
     public var index:Int;
     public var file: String;
     public var line: Int;
+    public var name: String;
     public var locals(get,set):Array<Variable>;
 
     private var localVars: Map<String, Dynamic>;

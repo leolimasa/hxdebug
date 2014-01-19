@@ -1,4 +1,5 @@
 --macro hxdebug.Builder.debug()
 -main Hello
--lib hxdebug
+-lib hxdebug-common
+-lib hxdebug-client
 -cpp mycpp
