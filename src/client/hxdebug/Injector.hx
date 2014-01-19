@@ -1,4 +1,6 @@
 package hxdebug;
+import hxdebug.tools.FileCache;
+import hxdebug.tools.FileCache;
 import haxe.macro.Expr.Position;
 import hxdebug.tools.FileCache;
 import haxe.macro.Type.ClassField;
@@ -14,8 +16,13 @@ class BlockExp {
     public var exprs:Array<Expr>;
     public var pos:Position;
 
-    public function new(exp:Expr) {
+    public function new(?exp:Expr) {
         var t = Sys.time();
+
+        if (exp == null) {
+            return;
+        }
+
         switch (exp.expr) {
             case (ExprDef.EBlock(exprs)):
                 this.exprs = exprs;
@@ -124,14 +131,18 @@ class Injector {
                     var expr = inject(fun.expr);
 
                     // Adds stack start and end
-                    //var block = new BlockExp(expr);
-                    //addStackHandlingToBlock(f.pos, f.name, block);
+                    var block = new BlockExp();
+                    block.exprs = new Array<Expr>();
+                    block.exprs.push(makeStackStartExpr(f.pos, f.name));
+                    block.exprs.push(expr);
+                    block.exprs.push(makeStackEndExpr(f.pos));
+                    block.pos = f.pos;
 
                     // Creates the new function declaration with injected blocks
                     var newFun = {
                         args: fun.args,
                         ret: fun.ret,
-                        expr: expr,
+                        expr: block.toExpr(),
                         params: fun.params
                     };
 
@@ -170,7 +181,7 @@ class Injector {
         #end
         var file = p.file;
         var min = p.min;
-        var line = findLineInFile(file, min);
+        var line = FileCache.findLine(file, min);
 
         var exp = macro hxdebug.Debugger.hit($v{file}, $v{line});
 
@@ -193,7 +204,7 @@ class Injector {
         #end
         var file = p.file;
         var min = p.min;
-        var line = findLineInFile(file, min);
+        var line = FileCache.findLine(file, min);
         var exp =  macro hxdebug.Debugger.pushStack(this, $v{funName}, $v{file},
         $v{line});
 
@@ -249,33 +260,6 @@ class Injector {
         return fun.toExpr();
     }
 
-    // ..................................................................................
-
-    /**
-    * Returns the count of how many linebreaks there are in contents before the specified
-    * position.
-    **/
-    public function charPosToLine(contents:String, pos:Int) : Int {
-        var t = Sys.time();
-        var stripped = contents.substr(0, pos);
-        var count = 0;
-        for (i in 0...stripped.length) {
-            if (stripped.charAt(i) == '\n') {
-                count++;
-            }
-        }
-        incTimer("charPosToLine", t);
-        return count + 1;
-    }
-
-    // ..................................................................................
-
-    /**
-    * Returns which line number the specified character position is within a file.
-    **/
-    public function findLineInFile(file:String, pos:Int) : Int {
-        return charPosToLine(FileCache.readFile(file), pos);
-    }
 }
 
 
